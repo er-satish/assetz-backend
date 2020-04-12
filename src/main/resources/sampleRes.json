@@ -1,0 +1,188 @@
+{
+    "data": [
+        {
+            "portfolioName": "Retirement",
+            "assets": {
+                "highlights": [
+                    {
+                        "name": "Current Valuation",
+                        "amount": "1500000",
+                        "changePercentage": "10.0",
+                        "change": "15000"
+                    },
+                    {
+                        "name": "Stocks",
+                        "amount": "1500000",
+                        "changePercentage": "-10.0",
+                        "change": "-10000"
+                    },
+                    {
+                        "name": "Mutual Funds",
+                        "amount": "1500000",
+                        "changePercentage": "10.0",
+                        "change": "6000"
+                    }
+                ],
+                "details": [
+                    {
+                        "assetType": "Stock",
+                        "currentValuation": "100.00",
+                        "amountInvested": "100.00",
+                        "gainLoss": "100980.00",
+                        "gainLossPercentage": "10.00",
+                        "totalNotionalGainLoss": "234334345",
+                        "totalRealizedGainLoss": "234334345"
+                    },
+                    {
+                        "assetType": "Mutual Fund",
+                        "currentValuation": "100.00",
+                        "amountInvested": "100.00",
+                        "gainLoss": "-10980.00",
+                        "gainLossPercentage": "-3.00",
+                        "totalNotionalGainLoss": "34345",
+                        "totalRealizedGainLoss": "4345"
+                    }
+                ]
+            }
+        },
+        {
+            "portfolioName": "Near Future",
+            "assets": {
+                "highlights": [
+                    {
+                        "name": "Current Valuation",
+                        "amount": "3500000",
+                        "changePercentage": "5.0",
+                        "change": "20000"
+                    },
+                    {
+                        "name": "Stocks",
+                        "amount": "5,000,00",
+                        "changePercentage": "-1.0",
+                        "change": "-1000"
+                    },
+                    {
+                        "name": "Mutual Funds",
+                        "amount": "500000",
+                        "changePercentage": "3.0",
+                        "change": "16000"
+                    }
+                ],
+                "details": [
+                    {
+                        "assetType": "Stock",
+                        "currentValuation": "1050.00",
+                        "amountInvested": "1050.00",
+                        "gainLoss": "10090.00",
+                        "gainLossPercentage": "10.00",
+                        "totalNotionalGainLoss": "34345",
+                        "totalRealizedGainLoss": "4345"
+                    },
+                    {
+                        "assetType": "Mutual Fund",
+                        "currentValuation": "100.00",
+                        "amountInvested": "100.00",
+                        "gainLoss": "-10980.00",
+                        "gainLossPercentage": "-3.00",
+                        "totalNotionalGainLoss": "34345",
+                        "totalRealizedGainLoss": "4345"
+                    }
+                ]
+            }
+        },
+        {
+            "portfolioName": "Emergency Fund",
+            "assets": {
+                "highlights": [
+                    {
+                        "name": "Current Valuation",
+                        "amount": "10000",
+                        "changePercentage": "10.0",
+                        "change": "200"
+                    },
+                    {
+                        "name": "Stocks",
+                        "amount": "15000",
+                        "changePercentage": "-10.0",
+                        "change": "-10000"
+                    },
+                    {
+                        "name": "Mutual Funds",
+                        "amount": "1500000",
+                        "changePercentage": "10.0",
+                        "change": "6000"
+                    }
+                ],
+                "details": [
+                    {
+                        "assetType": "Stock",
+                        "currentValuation": "100.00",
+                        "amountInvested": "100.00",
+                        "gainLoss": "100980.00",
+                        "gainLossPercentage": "10.00",
+                        "totalNotionalGainLoss": "234334345",
+                        "totalRealizedGainLoss": "234334345"
+                    },
+                    {
+                        "assetType": "Mutual Fund",
+                        "currentValuation": "10000.00",
+                        "amountInvested": "100.00",
+                        "gainLoss": "-1090.00",
+                        "gainLossPercentage": "-3.00",
+                        "totalNotionalGainLoss": "345",
+                        "totalRealizedGainLoss": "0.00"
+                    }
+                ]
+            }
+        },
+        {
+            "portfolioName": "Prachi Assets",
+            "assets": {
+                "highlights": [
+                    {
+                        "name": "Current Valuation",
+                        "amount": "1500000",
+                        "changePercentage": "10.0",
+                        "change": "10000"
+                    },
+                    {
+                        "name": "Stocks",
+                        "amount": "1500000",
+                        "changePercentage": "-10.0",
+                        "change": "-10000"
+                    },
+                    {
+                        "name": "Mutual Funds",
+                        "amount": "1500000",
+                        "changePercentage": "10.0",
+                        "change": "6000"
+                    }
+                ],
+                "details": [
+                    {
+                        "assetType": "Stock",
+                        "currentValuation": "100.00",
+                        "amountInvested": "100.00",
+                        "gainLoss": "100980.00",
+                        "gainLossPercentage": "10.00",
+                        "totalNotionalGainLoss": "234334345",
+                        "totalRealizedGainLoss": "234334345"
+                    },
+                    {
+                        "assetType": "Mutual Fund",
+                        "currentValuation": "100.00",
+                        "amountInvested": "100.00",
+                        "gainLoss": "-10980.00",
+                        "gainLossPercentage": "-3.00",
+                        "totalNotionalGainLoss": "34345",
+                        "totalRealizedGainLoss": "4345"
+                    }
+                ]
+            }
+        }
+    ],
+    "total":{
+        "totalNetworth":"50 Lakh",
+        "totalNetworthChange":"10000"
+    }
+}
