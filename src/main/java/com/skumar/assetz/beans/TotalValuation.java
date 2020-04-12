@@ -1,15 +1,19 @@
 package com.skumar.assetz.beans;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class TotalValuation implements Serializable{
+import lombok.Data;
+
+@Data
+public class TotalValuation implements Serializable {
     private static final long serialVersionUID = 1L;
-    
+
     @JsonProperty("totalNetworth")
-    private String networth;
+    private BigDecimal networth = BigDecimal.ZERO;
     @JsonProperty("totalNetworthChange")
-    private String change;
+    private BigDecimal change = BigDecimal.ZERO;
 
 }

@@ -29,7 +29,7 @@ public class AssetsController {
     @GetMapping("assets")
     public AssetsSummaryResponse getAssetsSummary() throws IOException {
         log.info("Received request for getting assets summary at time: {}", LocalDateTime.now());
-        //String hardcoded = new String(Files.readAllBytes(new File("/Users/skuma596/mydata/lab/assetz/backend/assetz/src/main/resources/sampleRes.json").toPath()));
+        //String hardcoded = new String(Files.readAllBytes(new File("/Users/~/mydata/lab/assetz/backend/assetz/src/main/resources/sampleRes.json").toPath()));
         //AssetsSummaryResponse   response = new ObjectMapper().readValue(hardcoded, AssetsSummaryResponse.class);
         return assetsService.getAssetsSummary();
     }
