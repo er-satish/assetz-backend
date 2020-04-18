@@ -30,10 +30,16 @@ public class AssetsGenericRepo {
     @Autowired
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     
-    String queryToGetCurrentHoldings = "select portfolio_name,asset_type,isin,scrip_name,avg_rate,quantity,invested_amt \n"
+    private final String queryToGetCurrentHoldings = "select portfolio_name,asset_type,isin,scrip_name,avg_rate,quantity,invested_amt \n"
             + "from current_holding order by portfolio_name,asset_type,isin";
 
-    String queryToGetCurrentNavForStocks = "select distinct isin,close from public.navhistory nh where nh.timestamp = :date and nh.isin in (:isin)";
+    private final String queryToGetCurrentNavForStocks = "select distinct isin,close from public.navhistory nh where nh.timestamp = :date and nh.isin in (:isin)";
+    
+    private final String queryToGetCurrentNavForMf = "select distinct isin,close from public.mfnavhistory nh where nh.timestamp = :date and nh.isin in (:isin)";
+    
+    private final String query4StockTradedDays = "select  max(timestamp) as enddate,min(timestamp) as startdate from public.navhistory where timestamp>=current_date-?";
+    
+    private final String query4MfTradedDays = "select  max(timestamp) as enddate,min(timestamp) as startdate from public.mfnavhistory where timestamp>=current_date-?";
 
     public List<CurrentHoldingsDTO> getCurrentHoldings() {
 
@@ -55,7 +61,7 @@ public class AssetsGenericRepo {
         });
     }
 
-    public Map<String, BigDecimal> getCurrentNavForStocks(LocalDate date, Set<String> isin) {
+    public Map<String, BigDecimal> getNavForStocks(LocalDate date, Set<String> isin) {
         Map<String, BigDecimal> ratesMap = new HashMap<String, BigDecimal>();
 
         SqlParameterSource namedParameters = new MapSqlParameterSource().addValue("date", date)
@@ -79,6 +85,41 @@ public class AssetsGenericRepo {
             });
         }
         return ratesMap;
+    }
+    
+    public Map<String, BigDecimal> getNavForMF(LocalDate date, Set<String> isin) {
+        Map<String, BigDecimal> ratesMap = new HashMap<String, BigDecimal>();
+
+        SqlParameterSource namedParameters = new MapSqlParameterSource().addValue("date", date)
+                .addValue("isin", isin);
+        
+        List<PriceDTO> rates = namedParameterJdbcTemplate.query(queryToGetCurrentNavForMf, namedParameters,new RowMapper<PriceDTO>() {
+
+            @Override
+            public PriceDTO mapRow(ResultSet rs, int rowNum) throws SQLException {
+                PriceDTO price = new PriceDTO();
+                price.setIsin(rs.getString("isin"));
+                price.setRate(rs.getBigDecimal("close"));
+                return price;
+            }
+
+        });
+
+        if (!CollectionUtils.isEmpty(rates)) {
+            rates.stream().forEach(pdto -> {
+                ratesMap.put(pdto.getIsin(), pdto.getRate());
+            });
+        }
+        return ratesMap;
+    }
+
+    public Map<String,Object> getLastTradeDays(Integer period) {
+         return jdbcTemplate.queryForMap(query4StockTradedDays, new Integer[]{period}, new int[]{java.sql.Types.INTEGER} );
+         
+    }
+    
+    public Map<String,Object> getLastAvailabeDayForMF(Integer period) {
+        return jdbcTemplate.queryForMap(query4MfTradedDays, new Integer[]{period}, new int[]{java.sql.Types.INTEGER} );
     }
 
 }

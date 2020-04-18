@@ -23,4 +23,6 @@ public class AssetsSummaryDetails implements Serializable{
     private BigDecimal gainLossPercentage = BigDecimal.ZERO;
     private BigDecimal totalNotionalGainLoss = BigDecimal.ZERO;
     private BigDecimal totalRealizedGainLoss = BigDecimal.ZERO;
+    
+    private BigDecimal previousValuation = BigDecimal.ZERO;
 }

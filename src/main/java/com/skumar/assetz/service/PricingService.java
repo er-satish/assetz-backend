@@ -1,6 +1,8 @@
 package com.skumar.assetz.service;
 
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.net.MalformedURLException;
 import java.time.LocalDate;
 import java.util.Map;
 import java.util.Set;
@@ -24,5 +26,7 @@ public interface PricingService {
      * @return map of <ISIN, Price>
      */
     Map<String, BigDecimal> getMutualFundsPrice(LocalDate date, Set<String> isin);
+    
+    void populateMutualFundsPrice() throws MalformedURLException, IOException;
 
 }

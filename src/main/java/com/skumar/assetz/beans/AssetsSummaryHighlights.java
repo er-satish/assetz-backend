@@ -21,6 +21,8 @@ public class AssetsSummaryHighlights implements Serializable{
     @JsonProperty("amount")
     private BigDecimal currentValuation = BigDecimal.ZERO;
     
+    private BigDecimal previousValuation = BigDecimal.ZERO;
+    
     private BigDecimal changePercentage = BigDecimal.ZERO;
     
     private BigDecimal change = BigDecimal.ZERO;
