@@ -26,20 +26,20 @@ public class AssetsGenericRepo {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
-    
+
     @Autowired
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
-    
+
     private final String queryToGetCurrentHoldings = "select portfolio_name,asset_type,isin,scrip_name,avg_rate,quantity,invested_amt \n"
             + "from current_holding order by portfolio_name,asset_type,isin";
 
-    private final String queryToGetCurrentNavForStocks = "select distinct isin,close from public.navhistory nh where nh.timestamp = :date and nh.isin in (:isin)";
-    
-    private final String queryToGetCurrentNavForMf = "select distinct isin,close from public.mfnavhistory nh where nh.timestamp = :date and nh.isin in (:isin)";
-    
-    private final String query4StockTradedDays = "select  max(timestamp) as enddate,min(timestamp) as startdate from public.navhistory where timestamp>=current_date-?";
-    
-    private final String query4MfTradedDays = "select  max(timestamp) as enddate,min(timestamp) as startdate from public.mfnavhistory where timestamp>=current_date-?";
+    private final String queryToGetCurrentNavForStocks = "select isin,close from ( select isin,close,timestamp,ROW_NUMBER() over (partition by isin order by timestamp desc) as rn from public.navhistory nh where nh.isin in (:isin) and nh.timestamp<=:date ) tem where tem.rn=1";
+
+    private final String queryToGetCurrentNavForMf = "select isin,close from ( select isin,close,timestamp,ROW_NUMBER() over (partition by isin order by timestamp desc) as rn from public.mfnavhistory nh where nh.isin in (:isin) and nh.timestamp<=:date ) tem where tem.rn=1";
+
+    private final String queryToGetPreviousNavForStocks = "select isin,close from ( select isin,close,timestamp,ROW_NUMBER() over (partition by isin order by timestamp asc) as rn from public.navhistory nh where nh.isin in ( :isin ) and timestamp>=:date ) tem where tem.rn=1";
+
+    private final String queryToGetPreviousNavForMf = "select isin,close from ( select isin,close,timestamp,ROW_NUMBER() over (partition by isin order by timestamp asc) as rn from public.mfnavhistory nh where nh.isin in ( :isin ) and timestamp>=:date ) tem where tem.rn=1";
 
     public List<CurrentHoldingsDTO> getCurrentHoldings() {
 
@@ -64,20 +64,20 @@ public class AssetsGenericRepo {
     public Map<String, BigDecimal> getNavForStocks(LocalDate date, Set<String> isin) {
         Map<String, BigDecimal> ratesMap = new HashMap<String, BigDecimal>();
 
-        SqlParameterSource namedParameters = new MapSqlParameterSource().addValue("date", date)
-                .addValue("isin", isin);
-        
-        List<PriceDTO> rates = namedParameterJdbcTemplate.query(queryToGetCurrentNavForStocks, namedParameters,new RowMapper<PriceDTO>() {
+        SqlParameterSource namedParameters = new MapSqlParameterSource().addValue("date", date).addValue("isin", isin);
 
-            @Override
-            public PriceDTO mapRow(ResultSet rs, int rowNum) throws SQLException {
-                PriceDTO price = new PriceDTO();
-                price.setIsin(rs.getString("isin"));
-                price.setRate(rs.getBigDecimal("close"));
-                return price;
-            }
+        List<PriceDTO> rates = namedParameterJdbcTemplate.query(queryToGetCurrentNavForStocks, namedParameters,
+                new RowMapper<PriceDTO>() {
 
-        });
+                    @Override
+                    public PriceDTO mapRow(ResultSet rs, int rowNum) throws SQLException {
+                        PriceDTO price = new PriceDTO();
+                        price.setIsin(rs.getString("isin"));
+                        price.setRate(rs.getBigDecimal("close"));
+                        return price;
+                    }
+
+                });
 
         if (!CollectionUtils.isEmpty(rates)) {
             rates.stream().forEach(pdto -> {
@@ -86,24 +86,50 @@ public class AssetsGenericRepo {
         }
         return ratesMap;
     }
-    
+
+    public Map<String, BigDecimal> getPreviousNavForStocks(LocalDate date, Set<String> isin) {
+        Map<String, BigDecimal> ratesMap = new HashMap<String, BigDecimal>();
+
+        SqlParameterSource namedParameters = new MapSqlParameterSource().addValue("date", date).addValue("isin", isin);
+
+        List<PriceDTO> rates = namedParameterJdbcTemplate.query(queryToGetPreviousNavForStocks, namedParameters,
+                new RowMapper<PriceDTO>() {
+
+                    @Override
+                    public PriceDTO mapRow(ResultSet rs, int rowNum) throws SQLException {
+                        PriceDTO price = new PriceDTO();
+                        price.setIsin(rs.getString("isin"));
+                        price.setRate(rs.getBigDecimal("close"));
+                        return price;
+                    }
+
+                });
+
+        if (!CollectionUtils.isEmpty(rates)) {
+            rates.stream().forEach(pdto -> {
+                ratesMap.put(pdto.getIsin(), pdto.getRate());
+            });
+        }
+        return ratesMap;
+    }
+
     public Map<String, BigDecimal> getNavForMF(LocalDate date, Set<String> isin) {
         Map<String, BigDecimal> ratesMap = new HashMap<String, BigDecimal>();
 
-        SqlParameterSource namedParameters = new MapSqlParameterSource().addValue("date", date)
-                .addValue("isin", isin);
-        
-        List<PriceDTO> rates = namedParameterJdbcTemplate.query(queryToGetCurrentNavForMf, namedParameters,new RowMapper<PriceDTO>() {
+        SqlParameterSource namedParameters = new MapSqlParameterSource().addValue("date", date).addValue("isin", isin);
 
-            @Override
-            public PriceDTO mapRow(ResultSet rs, int rowNum) throws SQLException {
-                PriceDTO price = new PriceDTO();
-                price.setIsin(rs.getString("isin"));
-                price.setRate(rs.getBigDecimal("close"));
-                return price;
-            }
+        List<PriceDTO> rates = namedParameterJdbcTemplate.query(queryToGetCurrentNavForMf, namedParameters,
+                new RowMapper<PriceDTO>() {
 
-        });
+                    @Override
+                    public PriceDTO mapRow(ResultSet rs, int rowNum) throws SQLException {
+                        PriceDTO price = new PriceDTO();
+                        price.setIsin(rs.getString("isin"));
+                        price.setRate(rs.getBigDecimal("close"));
+                        return price;
+                    }
+
+                });
 
         if (!CollectionUtils.isEmpty(rates)) {
             rates.stream().forEach(pdto -> {
@@ -113,13 +139,30 @@ public class AssetsGenericRepo {
         return ratesMap;
     }
 
-    public Map<String,Object> getLastTradeDays(Integer period) {
-         return jdbcTemplate.queryForMap(query4StockTradedDays, new Integer[]{period}, new int[]{java.sql.Types.INTEGER} );
-         
-    }
-    
-    public Map<String,Object> getLastAvailabeDayForMF(Integer period) {
-        return jdbcTemplate.queryForMap(query4MfTradedDays, new Integer[]{period}, new int[]{java.sql.Types.INTEGER} );
+    public Map<String, BigDecimal> getPreviousNavForMF(LocalDate date, Set<String> isin) {
+        Map<String, BigDecimal> ratesMap = new HashMap<String, BigDecimal>();
+
+        SqlParameterSource namedParameters = new MapSqlParameterSource().addValue("date", date).addValue("isin", isin);
+
+        List<PriceDTO> rates = namedParameterJdbcTemplate.query(queryToGetPreviousNavForMf, namedParameters,
+                new RowMapper<PriceDTO>() {
+
+                    @Override
+                    public PriceDTO mapRow(ResultSet rs, int rowNum) throws SQLException {
+                        PriceDTO price = new PriceDTO();
+                        price.setIsin(rs.getString("isin"));
+                        price.setRate(rs.getBigDecimal("close"));
+                        return price;
+                    }
+
+                });
+
+        if (!CollectionUtils.isEmpty(rates)) {
+            rates.stream().forEach(pdto -> {
+                ratesMap.put(pdto.getIsin(), pdto.getRate());
+            });
+        }
+        return ratesMap;
     }
 
 }

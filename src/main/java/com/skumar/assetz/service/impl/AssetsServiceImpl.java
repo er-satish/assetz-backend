@@ -19,7 +19,6 @@ import com.skumar.assetz.beans.AssetsSummaryDetails;
 import com.skumar.assetz.beans.AssetsSummaryHighlights;
 import com.skumar.assetz.beans.AssetsSummaryResponse;
 import com.skumar.assetz.beans.PortfolioSummary;
-import com.skumar.assetz.beans.ValuationPeriod;
 import com.skumar.assetz.dto.CurrentHoldingsDTO;
 import com.skumar.assetz.repo.AssetsGenericRepo;
 import com.skumar.assetz.service.AssetsService;
@@ -41,11 +40,11 @@ public class AssetsServiceImpl implements AssetsService {
     private final String MUTUAL_FUND = "Mutual Fund";
 
     @Override
-    public AssetsSummaryResponse getAssetsSummary(ValuationPeriod valuationPeriod) {
+    public AssetsSummaryResponse getAssetsSummary(LocalDate startDate, LocalDate endDate) {
         log.info("going to fetch details");
         List<CurrentHoldingsDTO> results = assetsGenericRepo.getCurrentHoldings();
         log.info("Count of fetched row:{}", results.size());
-        updateValuations(results, valuationPeriod);
+        updateValuations(results, startDate, endDate);
 
         Map<String, Map<String, AssetsSummaryDetails>> portfolioMap = new HashMap<>();
 
@@ -101,32 +100,6 @@ public class AssetsServiceImpl implements AssetsService {
         return response;
     }
 
-    private Map<String, Object> findStocksTradedDay(ValuationPeriod valuationPeriod) {
-        return assetsGenericRepo.getLastTradeDays(getDay(valuationPeriod));
-    }
-
-    private Integer getDay(ValuationPeriod valuationPeriod) {
-        switch (valuationPeriod) {
-        case TODAY:
-            return 1;
-        case _7Days:
-            return 7;
-        case _15Days:
-            return 15;
-        case _30Days:
-            return 30;
-        case _90Days:
-            return 90;
-        default:
-            return 1;
-        }
-
-    }
-
-    private Map<String, Object> findMfsTradedDay(ValuationPeriod valuationPeriod) {
-        return assetsGenericRepo.getLastAvailabeDayForMF(getDay(valuationPeriod));
-    }
-
     private AssetsSummaryResponse buildAssetsSummaryResponse(
             Map<String, Map<String, AssetsSummaryDetails>> portfolioMap) {
         AssetsSummaryResponse response = new AssetsSummaryResponse();
@@ -156,7 +129,8 @@ public class AssetsServiceImpl implements AssetsService {
                                             .subtract(totalValuation4SelectedPortfolio.getPreviousValuation()));
                             totalValuation4SelectedPortfolio.setChangePercentage(
                                     totalValuation4SelectedPortfolio.getChange().multiply(BigDecimal.valueOf(100))
-                                            .divide(totalValuation4SelectedPortfolio.getPreviousValuation(),RoundingMode.HALF_UP));
+                                            .divide(totalValuation4SelectedPortfolio.getPreviousValuation(),
+                                                    RoundingMode.HALF_UP));
                         }
                         // update total current valuation across all portfolios
                         response.getTotalValuation().setNetworth(response.getTotalValuation().getNetworth()
@@ -194,41 +168,8 @@ public class AssetsServiceImpl implements AssetsService {
         return response;
     }
 
-    private void updateValuations(List<CurrentHoldingsDTO> currentHoldings, ValuationPeriod valuationPeriod) {
-        log.info("Going to calculate valuation for valuationPeriod: {}", valuationPeriod);
-        Map<String, Object> tradeDates = findStocksTradedDay(valuationPeriod);
-        LocalDate endDateForStocks = null;
-        LocalDate startDateForStocks = null;
-        if (tradeDates != null) {
-            if (tradeDates.get("enddate") != null) {
-                endDateForStocks = ((java.sql.Date) tradeDates.get("enddate")).toLocalDate();
-            }
-
-            if (tradeDates.get("startdate") != null) {
-                startDateForStocks = ((java.sql.Date) tradeDates.get("startdate")).toLocalDate();
-            }
-
-        }
-
-        log.info("Selected Trade dates for stocks are [endDateForStocks, startDateForStocks]: [{}, {}]",
-                endDateForStocks, startDateForStocks);
-
-        Map<String, Object> mfTradeDates = findMfsTradedDay(valuationPeriod);
-        LocalDate endDateForMfs = null;
-        LocalDate startDateForMfs = null;
-        if (mfTradeDates != null) {
-            if (mfTradeDates.get("enddate") != null) {
-                endDateForMfs = ((java.sql.Date) mfTradeDates.get("enddate")).toLocalDate();
-            }
-
-            if (mfTradeDates.get("startdate") != null) {
-                startDateForMfs = ((java.sql.Date) mfTradeDates.get("startdate")).toLocalDate();
-            }
-
-        }
-        log.info("Selected Trade dates for mutual funds are [endDateForMfs, startDateForMfs]: [{}, {}]", endDateForMfs,
-                startDateForMfs);
-
+    private void updateValuations(List<CurrentHoldingsDTO> currentHoldings, LocalDate startDate, LocalDate endDate) {
+        log.info("Going to calculate valuation for [startDate,endDate]: [{}, {}]", startDate, endDate);
         // find unique ISIN and group based on asset type
         Map<String, Set<String>> uniqueIsin = new HashMap<>();
         if (!CollectionUtils.isEmpty(currentHoldings)) {
@@ -250,11 +191,11 @@ public class AssetsServiceImpl implements AssetsService {
                 switch (entry.getKey()) {
                 case STOCK:
                     // call stocks pricing service
-                    rates.putAll(pricingService.getStocksPrice(endDateForStocks, entry.getValue()));
+                    rates.putAll(pricingService.getStocksPrice(endDate, entry.getValue()));
                     break;
                 case MUTUAL_FUND:
                     // call MF pricing service
-                    rates.putAll(pricingService.getMutualFundsPrice(endDateForMfs, entry.getValue()));
+                    rates.putAll(pricingService.getMutualFundsPrice(endDate, entry.getValue()));
                     break;
                 }
             }
@@ -266,11 +207,11 @@ public class AssetsServiceImpl implements AssetsService {
                 switch (entry.getKey()) {
                 case STOCK:
                     // call stocks pricing service
-                    previousPeriodRates.putAll(pricingService.getStocksPrice(startDateForStocks, entry.getValue()));
+                    previousPeriodRates.putAll(pricingService.getStocksPreviousPrice(startDate, entry.getValue()));
                     break;
                 case MUTUAL_FUND:
                     // call MF pricing service
-                    previousPeriodRates.putAll(pricingService.getMutualFundsPrice(startDateForMfs, entry.getValue()));
+                    previousPeriodRates.putAll(pricingService.getMutualFundsPreviousPrice(startDate, entry.getValue()));
                     break;
                 }
             }

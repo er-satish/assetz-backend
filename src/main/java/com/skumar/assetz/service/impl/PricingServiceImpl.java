@@ -29,14 +29,14 @@ import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
-public class PricingServiceImpl implements PricingService{
+public class PricingServiceImpl implements PricingService {
     final static String url = "https://www.amfiindia.com/spages/NAVOpen.txt";
     final static String mountPoint = "/home/pi/lab/myapp/assetz/backend/data/";
     final static String datePattern = "d-MMM-uuuu";
-    
+
     @Autowired
     private AssetsGenericRepo assetsGenericRepo;
-    
+
     @Autowired
     private MfNavHistoryRepo mfNavHistoryRepo;
 
@@ -49,41 +49,54 @@ public class PricingServiceImpl implements PricingService{
     public Map<String, BigDecimal> getMutualFundsPrice(LocalDate date, Set<String> isin) {
         return assetsGenericRepo.getNavForMF(date, isin);
     }
+    
+    @Override
+    public Map<String, BigDecimal> getStocksPreviousPrice(LocalDate date, Set<String> isin) {
+        return assetsGenericRepo.getPreviousNavForStocks(date, isin);
+    }
 
     @Override
-    public void populateMutualFundsPrice() throws MalformedURLException, IOException {
-        log.info("Going to download prices from : {}",url);
-        final LocalDate navDate = LocalDate.now().minusDays(1);
-        String navDateFormatted =  navDate.format(DateTimeFormatter.ofPattern(datePattern));
-        log.info("Prices will be populated for day:{}",navDateFormatted);
-        final Pattern regexPattern = Pattern.compile(navDateFormatted+"$");
+    public Map<String, BigDecimal> getMutualFundsPreviousPrice(LocalDate date, Set<String> isin) {
+        return assetsGenericRepo.getPreviousNavForMF(date, isin);
+    }
+
+    @Override
+    public void populateMutualFundsPrice(LocalDate navDate) throws MalformedURLException, IOException {
+        log.info("Going to download prices from : {}", url);
+        String navDateFormatted = navDate.format(DateTimeFormatter.ofPattern(datePattern));
+        log.info("Prices will be populated for day:{}", navDateFormatted);
+        final Pattern regexPattern = Pattern.compile(navDateFormatted + "$");
 
         String fileName = mountPoint + navDateFormatted;
         InputStream in = new URL(url).openStream();
         Files.copy(in, Paths.get(fileName), StandardCopyOption.REPLACE_EXISTING);
-        try(BufferedReader reader = new BufferedReader(new FileReader(new File(fileName)))){
-            reader.lines().filter(line -> regexPattern.matcher(line).find()).forEach(c -> doX(c,navDate));
-        }
-        catch(Exception e){
+        try (BufferedReader reader = new BufferedReader(new FileReader(new File(fileName)))) {
+            reader.lines().filter(line -> regexPattern.matcher(line).find()).forEach(c -> doX(c, navDate));
+        } catch (Exception e) {
             e.printStackTrace();
         }
-        
+
     }
-    
+
     private void doX(String c, LocalDate navDate) {
         String[] arr = c.split(";");
 
-        if(arr.length==6) {
+        if (arr.length == 6) {
             MfNavHistory mfNavHistory = new MfNavHistory();
             mfNavHistory.setIsin(arr[1]);
             mfNavHistory.setSymbol(arr[3]);
             mfNavHistory.setClose(new BigDecimal(arr[4]));
             mfNavHistory.setTimestamp(navDate);
 
-            log.info("Going to save prices with details:{}",mfNavHistory);
-            mfNavHistoryRepo.save(mfNavHistory);
+            log.info("Going to save prices with details:{}", mfNavHistory);
+            try {
+                mfNavHistoryRepo.save(mfNavHistory);
+            } catch (Exception e) {
+                log.error("failed to save nav for mf:{}", mfNavHistory);
+            }
+
         }
-        
+
     }
 
 }

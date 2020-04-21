@@ -27,6 +27,25 @@ public interface PricingService {
      */
     Map<String, BigDecimal> getMutualFundsPrice(LocalDate date, Set<String> isin);
     
-    void populateMutualFundsPrice() throws MalformedURLException, IOException;
+    /**
+     * Returns price of the stocks for the given date
+     * 
+     * @param date
+     * @param isin
+     * @return map of <ISIN, Price>
+     */
+    Map<String, BigDecimal> getStocksPreviousPrice(LocalDate date, Set<String> isin);
+
+    /**
+     * Returns price of the mutual funds for the given date
+     * 
+     * @param date
+     * @param isin
+     * @return map of <ISIN, Price>
+     */
+    Map<String, BigDecimal> getMutualFundsPreviousPrice(LocalDate date, Set<String> isin);
+    
+    
+    void populateMutualFundsPrice(LocalDate date) throws MalformedURLException, IOException;
 
 }
