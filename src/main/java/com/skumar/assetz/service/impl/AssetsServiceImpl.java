@@ -134,9 +134,9 @@ public class AssetsServiceImpl implements AssetsService {
                         }
                         // update total current valuation across all portfolios
                         response.getTotalValuation().setNetworth(response.getTotalValuation().getNetworth()
-                                .add(totalValuation4SelectedPortfolio.getCurrentValuation()));
+                                .add(asEntry.getValue().getCurrentValuation()));
                         response.getTotalValuation().setPreviousNetworth(response.getTotalValuation()
-                                .getPreviousNetworth().add(totalValuation4SelectedPortfolio.getPreviousValuation()));
+                                .getPreviousNetworth().add(asEntry.getValue().getPreviousValuation()));
                         response.getTotalValuation().setChange(response.getTotalValuation().getNetworth()
                                 .subtract(response.getTotalValuation().getPreviousNetworth()));
 
