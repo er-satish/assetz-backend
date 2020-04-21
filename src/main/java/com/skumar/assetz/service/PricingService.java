@@ -48,4 +48,8 @@ public interface PricingService {
     
     void populateMutualFundsPrice(LocalDate date) throws MalformedURLException, IOException;
 
+    Map<String, BigDecimal> getEPFPrice(LocalDate endDate, Set<String> value);
+
+    Map<String, BigDecimal> getPPFPrice(LocalDate endDate, Set<String> value);
+
 }

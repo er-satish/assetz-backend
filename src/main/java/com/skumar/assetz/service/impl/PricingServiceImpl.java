@@ -13,12 +13,14 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import com.skumar.assetz.entity.MfNavHistory;
 import com.skumar.assetz.repo.AssetsGenericRepo;
@@ -49,7 +51,7 @@ public class PricingServiceImpl implements PricingService {
     public Map<String, BigDecimal> getMutualFundsPrice(LocalDate date, Set<String> isin) {
         return assetsGenericRepo.getNavForMF(date, isin);
     }
-    
+
     @Override
     public Map<String, BigDecimal> getStocksPreviousPrice(LocalDate date, Set<String> isin) {
         return assetsGenericRepo.getPreviousNavForStocks(date, isin);
@@ -97,6 +99,27 @@ public class PricingServiceImpl implements PricingService {
 
         }
 
+    }
+
+    @Override
+    public Map<String, BigDecimal> getEPFPrice(LocalDate endDate, Set<String> value) {
+        // TODO impl. actual logic
+        Map<String, BigDecimal> ratesMap = new HashMap<String, BigDecimal>();
+        if (!CollectionUtils.isEmpty(value)) {
+            value.forEach(v -> ratesMap.put(v, BigDecimal.ONE));
+        }
+        return ratesMap;
+    }
+
+    @Override
+    public Map<String, BigDecimal> getPPFPrice(LocalDate endDate, Set<String> value) {
+        Map<String, BigDecimal> ratesMap = new HashMap<String, BigDecimal>();
+        // TODO impl. actual logic
+        if (!CollectionUtils.isEmpty(value)) {
+            value.forEach(v -> ratesMap.put(v, BigDecimal.valueOf(1.4212)));
+
+        }
+        return ratesMap;
     }
 
 }

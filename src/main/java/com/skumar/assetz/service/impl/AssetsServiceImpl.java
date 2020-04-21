@@ -38,6 +38,8 @@ public class AssetsServiceImpl implements AssetsService {
     private final String CURRENT_VALUATION = "Current Valuation";
     private final String STOCK = "Stock";
     private final String MUTUAL_FUND = "Mutual Fund";
+    private final String PPF = "PPF";
+    private final String EPF = "EPF";
 
     @Override
     public AssetsSummaryResponse getAssetsSummary(LocalDate startDate, LocalDate endDate) {
@@ -197,6 +199,14 @@ public class AssetsServiceImpl implements AssetsService {
                     // call MF pricing service
                     rates.putAll(pricingService.getMutualFundsPrice(endDate, entry.getValue()));
                     break;
+                case PPF:
+                    // for EPF pricing service
+                    rates.putAll(pricingService.getPPFPrice(endDate, entry.getValue()));
+                    break;
+                case EPF:
+                    // for PPF pricing service
+                    rates.putAll(pricingService.getEPFPrice(endDate, entry.getValue()));
+                    break;
                 }
             }
         }
@@ -212,6 +222,14 @@ public class AssetsServiceImpl implements AssetsService {
                 case MUTUAL_FUND:
                     // call MF pricing service
                     previousPeriodRates.putAll(pricingService.getMutualFundsPreviousPrice(startDate, entry.getValue()));
+                    break;
+                case PPF:
+                    // for EPF pricing service
+                    previousPeriodRates.putAll(pricingService.getPPFPrice(endDate, entry.getValue()));
+                    break;
+                case EPF:
+                    // for PPF pricing service
+                    previousPeriodRates.putAll(pricingService.getEPFPrice(endDate, entry.getValue()));
                     break;
                 }
             }
