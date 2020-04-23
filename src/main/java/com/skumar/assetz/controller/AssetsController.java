@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.skumar.assetz.beans.AssetsDetailsResponse;
 import com.skumar.assetz.beans.AssetsSummaryResponse;
 import com.skumar.assetz.service.AssetsService;
 import com.skumar.assetz.service.PricingService;
@@ -49,7 +50,18 @@ public class AssetsController {
     public String fetchMfPrice(@PathVariable("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) throws MalformedURLException, IOException {
         pricingService.populateMutualFundsPrice(date);
         return "Success";
-
+    }
+    
+    @GetMapping("assets/types/{assetType}/portfolios/{portfolioName}")
+    public AssetsDetailsResponse getAssetDetails(
+            @PathVariable("assetType") String assetType,
+            @PathVariable("portfolioName") String portfolioName,
+            @RequestParam(name = "startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(name = "endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate)
+            throws IOException {
+        log.info("Received request for getting asset details at time: {} for [assetType, portfolioName, startDate, endDate]: [{}, {}, {}, {}]", assetType, portfolioName, LocalDateTime.now(),
+                startDate,endDate);
+        return assetsService.getAssetDetails(assetType,portfolioName,startDate,endDate);
     }
 
 }

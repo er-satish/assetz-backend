@@ -7,6 +7,8 @@ import java.time.LocalDate;
 import java.util.Map;
 import java.util.Set;
 
+import com.skumar.assetz.dto.PriceDTO;
+
 public interface PricingService {
 
     /**
@@ -14,42 +16,42 @@ public interface PricingService {
      * 
      * @param date
      * @param isin
-     * @return map of <ISIN, Price>
+     * @return map of <ISIN, PriceDTO>
      */
-    Map<String, BigDecimal> getStocksPrice(LocalDate date, Set<String> isin);
+    Map<String, PriceDTO> getStocksPrice(LocalDate date, Set<String> isin);
 
     /**
      * Returns price of the mutual funds for the given date
      * 
      * @param date
      * @param isin
-     * @return map of <ISIN, Price>
+     * @return map of <ISIN, PriceDTO>
      */
-    Map<String, BigDecimal> getMutualFundsPrice(LocalDate date, Set<String> isin);
+    Map<String, PriceDTO> getMutualFundsPrice(LocalDate date, Set<String> isin);
     
     /**
      * Returns price of the stocks for the given date
      * 
      * @param date
      * @param isin
-     * @return map of <ISIN, Price>
+     * @return map of <ISIN, PriceDTO>
      */
-    Map<String, BigDecimal> getStocksPreviousPrice(LocalDate date, Set<String> isin);
+    Map<String, PriceDTO> getStocksPreviousPrice(LocalDate date, Set<String> isin);
 
     /**
      * Returns price of the mutual funds for the given date
      * 
      * @param date
      * @param isin
-     * @return map of <ISIN, Price>
+     * @return map of <ISIN, PriceDTO>
      */
-    Map<String, BigDecimal> getMutualFundsPreviousPrice(LocalDate date, Set<String> isin);
+    Map<String, PriceDTO> getMutualFundsPreviousPrice(LocalDate date, Set<String> isin);
     
     
     void populateMutualFundsPrice(LocalDate date) throws MalformedURLException, IOException;
 
-    Map<String, BigDecimal> getEPFPrice(LocalDate endDate, Set<String> value);
+    Map<String, PriceDTO> getEPFPrice(LocalDate endDate, Set<String> value);
 
-    Map<String, BigDecimal> getPPFPrice(LocalDate endDate, Set<String> value);
+    Map<String, PriceDTO> getPPFPrice(LocalDate endDate, Set<String> value);
 
 }

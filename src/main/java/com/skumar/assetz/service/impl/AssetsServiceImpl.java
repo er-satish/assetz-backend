@@ -14,12 +14,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import com.skumar.assetz.beans.AssetDetails;
+import com.skumar.assetz.beans.AssetsDetailsResponse;
 import com.skumar.assetz.beans.AssetsSummary;
 import com.skumar.assetz.beans.AssetsSummaryDetails;
 import com.skumar.assetz.beans.AssetsSummaryHighlights;
 import com.skumar.assetz.beans.AssetsSummaryResponse;
 import com.skumar.assetz.beans.PortfolioSummary;
 import com.skumar.assetz.dto.CurrentHoldingsDTO;
+import com.skumar.assetz.dto.PriceDTO;
 import com.skumar.assetz.repo.AssetsGenericRepo;
 import com.skumar.assetz.service.AssetsService;
 import com.skumar.assetz.service.PricingService;
@@ -186,7 +189,7 @@ public class AssetsServiceImpl implements AssetsService {
                 isinSet.add(ch.getIsin());
             }
         }
-        Map<String, BigDecimal> rates = new HashMap<>();
+        Map<String, PriceDTO> rates = new HashMap<>();
         // call respective service to get current price per unit
         if (!uniqueIsin.isEmpty()) {
             for (Entry<String, Set<String>> entry : uniqueIsin.entrySet()) {
@@ -210,7 +213,7 @@ public class AssetsServiceImpl implements AssetsService {
                 }
             }
         }
-        Map<String, BigDecimal> previousPeriodRates = new HashMap<>();
+        Map<String, PriceDTO> previousPeriodRates = new HashMap<>();
         // call respective service to get previous period price per unit
         if (!uniqueIsin.isEmpty()) {
             for (Entry<String, Set<String>> entry : uniqueIsin.entrySet()) {
@@ -242,17 +245,61 @@ public class AssetsServiceImpl implements AssetsService {
 
     }
 
-    private void updateValuation(CurrentHoldingsDTO ch, Map<String, BigDecimal> rates,
-            Map<String, BigDecimal> previousPeriodRates) {
-        BigDecimal rate = rates.get(ch.getIsin());
-        if (ch.getQuantity() != null && rate != null) {
-            ch.setCurrentValuationAmt(ch.getQuantity().multiply(rate));
+    private void updateValuation(CurrentHoldingsDTO ch, Map<String, PriceDTO> rates,
+            Map<String, PriceDTO> previousPeriodRates) {
+        PriceDTO rate = rates.get(ch.getIsin());
+        if (ch.getQuantity() != null && rate != null && rate.getRate() != null) {
+            ch.setCurrentValuationAmt(ch.getQuantity().multiply(rate.getRate()));
+            ch.setLastNav(rate.getRate());
+            ch.setLastNavDt(rate.getNavDt());
         }
 
-        BigDecimal previousRate = previousPeriodRates.get(ch.getIsin());
-        if (ch.getQuantity() != null && previousRate != null) {
-            ch.setPreviousValuationAmt(ch.getQuantity().multiply(previousRate));
+        PriceDTO previousRate = previousPeriodRates.get(ch.getIsin());
+        if (ch.getQuantity() != null && previousRate != null && previousRate.getRate() != null) {
+            ch.setPreviousValuationAmt(ch.getQuantity().multiply(previousRate.getRate()));
+            ch.setPreviousNav(previousRate.getRate());
+            ch.setPreviousNavDt(previousRate.getNavDt());
         }
+    }
+
+    @Override
+    public AssetsDetailsResponse getAssetDetails(String assetType, String portfolioName, LocalDate startDate,
+            LocalDate endDate) {
+        log.info("going to fetch asset details from DB");
+
+        List<CurrentHoldingsDTO> results = assetsGenericRepo.getCurrentHoldings(assetType, portfolioName);
+        log.info("Count of fetched row:{}", results.size());
+        updateValuations(results, startDate, endDate);
+        AssetsDetailsResponse response = new AssetsDetailsResponse();
+        if (!CollectionUtils.isEmpty(results)) {
+            results.stream().forEach(item -> response.getAssetDetails().add(buildAssetDetails(item)));
+        }
+        return response;
+    }
+
+    private AssetDetails buildAssetDetails(CurrentHoldingsDTO item) {
+        AssetDetails assetDetails = new AssetDetails();
+        assetDetails.setSchemeName(item.getScripName());
+        assetDetails.setLastNav(item.getLastNav());
+        assetDetails.setLastNavDt(item.getLastNavDt());
+        if(item.getPreviousNav()!=null && !item.getPreviousNav().equals(BigDecimal.ZERO)) {
+            assetDetails.setNavChange(item.getLastNav().subtract(item.getPreviousNav()));
+            assetDetails.setNavChangePercent(assetDetails.getNavChange().multiply(BigDecimal.valueOf(100)).divide(item.getPreviousNav(), RoundingMode.HALF_UP));
+        }
+        assetDetails.setUnits(item.getQuantity());
+        assetDetails.setAvgCost(item.getAvgRate());
+        assetDetails.setInvestedAmt(item.getInvestedAmt());
+        assetDetails.setCurrentValuation(item.getCurrentValuationAmt());
+        assetDetails.setPreviousValuation(item.getPreviousValuationAmt());
+        
+        if(assetDetails.getPreviousValuation()!=null && !assetDetails.getPreviousValuation().equals(BigDecimal.ZERO)) {
+            assetDetails.setGainLoss(assetDetails.getCurrentValuation().subtract(assetDetails.getPreviousValuation()));
+            assetDetails.setGainLossPercent(assetDetails.getGainLoss().multiply(BigDecimal.valueOf(100)).divide(assetDetails.getPreviousValuation(), RoundingMode.HALF_UP));
+        }
+        
+        assetDetails.setNotionalGainLoss(assetDetails.getCurrentValuation().subtract(assetDetails.getInvestedAmt()));
+        assetDetails.setNotionalGainLossPercent(assetDetails.getNotionalGainLoss().multiply(BigDecimal.valueOf(100)).divide(assetDetails.getInvestedAmt(), RoundingMode.HALF_UP));
+        return assetDetails;
     }
 
 }

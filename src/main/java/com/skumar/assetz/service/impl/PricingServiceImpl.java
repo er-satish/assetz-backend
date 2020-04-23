@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import com.skumar.assetz.dto.PriceDTO;
 import com.skumar.assetz.entity.MfNavHistory;
 import com.skumar.assetz.repo.AssetsGenericRepo;
 import com.skumar.assetz.repo.MfNavHistoryRepo;
@@ -43,22 +44,22 @@ public class PricingServiceImpl implements PricingService {
     private MfNavHistoryRepo mfNavHistoryRepo;
 
     @Override
-    public Map<String, BigDecimal> getStocksPrice(LocalDate date, Set<String> isin) {
+    public Map<String, PriceDTO> getStocksPrice(LocalDate date, Set<String> isin) {
         return assetsGenericRepo.getNavForStocks(date, isin);
     }
 
     @Override
-    public Map<String, BigDecimal> getMutualFundsPrice(LocalDate date, Set<String> isin) {
+    public Map<String, PriceDTO> getMutualFundsPrice(LocalDate date, Set<String> isin) {
         return assetsGenericRepo.getNavForMF(date, isin);
     }
 
     @Override
-    public Map<String, BigDecimal> getStocksPreviousPrice(LocalDate date, Set<String> isin) {
+    public Map<String, PriceDTO> getStocksPreviousPrice(LocalDate date, Set<String> isin) {
         return assetsGenericRepo.getPreviousNavForStocks(date, isin);
     }
 
     @Override
-    public Map<String, BigDecimal> getMutualFundsPreviousPrice(LocalDate date, Set<String> isin) {
+    public Map<String, PriceDTO> getMutualFundsPreviousPrice(LocalDate date, Set<String> isin) {
         return assetsGenericRepo.getPreviousNavForMF(date, isin);
     }
 
@@ -102,21 +103,21 @@ public class PricingServiceImpl implements PricingService {
     }
 
     @Override
-    public Map<String, BigDecimal> getEPFPrice(LocalDate endDate, Set<String> value) {
+    public Map<String, PriceDTO> getEPFPrice(LocalDate endDate, Set<String> value) {
         // TODO impl. actual logic
-        Map<String, BigDecimal> ratesMap = new HashMap<String, BigDecimal>();
+        Map<String, PriceDTO> ratesMap = new HashMap<String, PriceDTO>();
         if (!CollectionUtils.isEmpty(value)) {
-            value.forEach(v -> ratesMap.put(v, BigDecimal.ONE));
+            value.forEach(v -> ratesMap.put(v, PriceDTO.builder().rate(BigDecimal.ONE).build()));
         }
         return ratesMap;
     }
 
     @Override
-    public Map<String, BigDecimal> getPPFPrice(LocalDate endDate, Set<String> value) {
-        Map<String, BigDecimal> ratesMap = new HashMap<String, BigDecimal>();
+    public Map<String, PriceDTO> getPPFPrice(LocalDate endDate, Set<String> value) {
+        Map<String, PriceDTO> ratesMap = new HashMap<String, PriceDTO>();
         // TODO impl. actual logic
         if (!CollectionUtils.isEmpty(value)) {
-            value.forEach(v -> ratesMap.put(v, BigDecimal.valueOf(1.4212)));
+            value.forEach(v -> ratesMap.put(v, PriceDTO.builder().rate(BigDecimal.valueOf(1.4212)).build()));
 
         }
         return ratesMap;

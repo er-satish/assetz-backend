@@ -2,6 +2,7 @@ package com.skumar.assetz.dto;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -32,5 +33,17 @@ public class CurrentHoldingsDTO implements Serializable{
      * Previous valuation amount could be based on last day, this week etc. depending on user selected date
      */
     private BigDecimal previousValuationAmt;
+    
+    /**
+     * Nav as per the selected end-date
+     */
+    private BigDecimal lastNav = BigDecimal.ZERO;
+    private LocalDate lastNavDt;
+    
+    /**
+     * Nav as per the selected start-date
+     */
+    private BigDecimal previousNav = BigDecimal.ZERO;
+    private LocalDate previousNavDt;
  
 }
