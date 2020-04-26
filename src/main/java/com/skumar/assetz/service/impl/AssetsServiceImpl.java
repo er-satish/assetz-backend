@@ -140,10 +140,14 @@ public class AssetsServiceImpl implements AssetsService {
                         // update total current valuation across all portfolios
                         response.getTotalValuation().setNetworth(response.getTotalValuation().getNetworth()
                                 .add(asEntry.getValue().getCurrentValuation()));
+                        response.getTotalValuation().setTotalInvestment(response.getTotalValuation()
+                                .getTotalInvestment().add(asEntry.getValue().getAmountInvested()));
                         response.getTotalValuation().setPreviousNetworth(response.getTotalValuation()
                                 .getPreviousNetworth().add(asEntry.getValue().getPreviousValuation()));
-                        response.getTotalValuation().setChange(response.getTotalValuation().getNetworth()
-                                .subtract(response.getTotalValuation().getPreviousNetworth()));
+                        if (!response.getTotalValuation().getPreviousNetworth().equals(BigDecimal.ZERO)) {
+                            response.getTotalValuation().setChange(response.getTotalValuation().getNetworth()
+                                    .subtract(response.getTotalValuation().getPreviousNetworth()));
+                        }
 
                         // prepare for other highlights data[Stocks and Mutual Funds]
                         if (asEntry.getValue().getAssetType().equalsIgnoreCase(STOCK)
@@ -282,23 +286,27 @@ public class AssetsServiceImpl implements AssetsService {
         assetDetails.setSchemeName(item.getScripName());
         assetDetails.setLastNav(item.getLastNav());
         assetDetails.setLastNavDt(item.getLastNavDt());
-        if(item.getPreviousNav()!=null && !item.getPreviousNav().equals(BigDecimal.ZERO)) {
+        if (item.getPreviousNav() != null && !item.getPreviousNav().equals(BigDecimal.ZERO)) {
             assetDetails.setNavChange(item.getLastNav().subtract(item.getPreviousNav()));
-            assetDetails.setNavChangePercent(assetDetails.getNavChange().multiply(BigDecimal.valueOf(100)).divide(item.getPreviousNav(), RoundingMode.HALF_UP));
+            assetDetails.setNavChangePercent(assetDetails.getNavChange().multiply(BigDecimal.valueOf(100))
+                    .divide(item.getPreviousNav(), RoundingMode.HALF_UP));
         }
         assetDetails.setUnits(item.getQuantity());
         assetDetails.setAvgCost(item.getAvgRate());
         assetDetails.setInvestedAmt(item.getInvestedAmt());
         assetDetails.setCurrentValuation(item.getCurrentValuationAmt());
         assetDetails.setPreviousValuation(item.getPreviousValuationAmt());
-        
-        if(assetDetails.getPreviousValuation()!=null && !assetDetails.getPreviousValuation().equals(BigDecimal.ZERO)) {
+
+        if (assetDetails.getPreviousValuation() != null
+                && !assetDetails.getPreviousValuation().equals(BigDecimal.ZERO)) {
             assetDetails.setGainLoss(assetDetails.getCurrentValuation().subtract(assetDetails.getPreviousValuation()));
-            assetDetails.setGainLossPercent(assetDetails.getGainLoss().multiply(BigDecimal.valueOf(100)).divide(assetDetails.getPreviousValuation(), RoundingMode.HALF_UP));
+            assetDetails.setGainLossPercent(assetDetails.getGainLoss().multiply(BigDecimal.valueOf(100))
+                    .divide(assetDetails.getPreviousValuation(), RoundingMode.HALF_UP));
         }
-        
+
         assetDetails.setNotionalGainLoss(assetDetails.getCurrentValuation().subtract(assetDetails.getInvestedAmt()));
-        assetDetails.setNotionalGainLossPercent(assetDetails.getNotionalGainLoss().multiply(BigDecimal.valueOf(100)).divide(assetDetails.getInvestedAmt(), RoundingMode.HALF_UP));
+        assetDetails.setNotionalGainLossPercent(assetDetails.getNotionalGainLoss().multiply(BigDecimal.valueOf(100))
+                .divide(assetDetails.getInvestedAmt(), RoundingMode.HALF_UP));
         return assetDetails;
     }
 

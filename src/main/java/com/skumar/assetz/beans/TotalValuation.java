@@ -15,6 +15,8 @@ public class TotalValuation implements Serializable {
     private BigDecimal networth = BigDecimal.ZERO;
     @JsonProperty("totalNetworthChange")
     private BigDecimal change = BigDecimal.ZERO;
+    @JsonProperty("totalInvestment")
+    private BigDecimal totalInvestment = BigDecimal.ZERO;
     
     private BigDecimal previousNetworth = BigDecimal.ZERO;
 
