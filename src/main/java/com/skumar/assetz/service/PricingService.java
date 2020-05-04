@@ -4,10 +4,12 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.MalformedURLException;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import com.skumar.assetz.dto.PriceDTO;
+import com.skumar.assetz.entity.BillPayment;
 
 public interface PricingService {
 
@@ -53,5 +55,9 @@ public interface PricingService {
     Map<String, PriceDTO> getEPFPrice(LocalDate endDate, Set<String> value);
 
     Map<String, PriceDTO> getPPFPrice(LocalDate endDate, Set<String> value);
+
+    List<BillPayment> getBills();
+
+    List<BillPayment> saveBills(List<BillPayment> bills);
 
 }

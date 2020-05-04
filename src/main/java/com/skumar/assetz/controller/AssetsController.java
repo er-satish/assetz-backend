@@ -4,17 +4,23 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
+
+import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.skumar.assetz.beans.AssetsDetailsResponse;
 import com.skumar.assetz.beans.AssetsSummaryResponse;
+import com.skumar.assetz.entity.BillPayment;
 import com.skumar.assetz.service.AssetsService;
 import com.skumar.assetz.service.PricingService;
 
@@ -62,6 +68,16 @@ public class AssetsController {
         log.info("Received request for getting asset details at time: {} for [assetType, portfolioName, startDate, endDate]: [{}, {}, {}, {}]", assetType, portfolioName, LocalDateTime.now(),
                 startDate,endDate);
         return assetsService.getAssetDetails(assetType,portfolioName,startDate,endDate);
+    }
+    
+    @GetMapping("bills")
+    public List<BillPayment> fetchBills() throws MalformedURLException, IOException {
+        return pricingService.getBills();
+    }
+    
+    @PutMapping("bills")
+    public List<BillPayment> updateBills(@RequestBody @Valid List<BillPayment> bills) throws MalformedURLException, IOException {
+        return pricingService.saveBills(bills);
     }
 
 }

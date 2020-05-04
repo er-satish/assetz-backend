@@ -14,6 +14,7 @@ import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -23,8 +24,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import com.skumar.assetz.dto.PriceDTO;
+import com.skumar.assetz.entity.BillPayment;
 import com.skumar.assetz.entity.MfNavHistory;
 import com.skumar.assetz.repo.AssetsGenericRepo;
+import com.skumar.assetz.repo.BillPaymentRepo;
 import com.skumar.assetz.repo.MfNavHistoryRepo;
 import com.skumar.assetz.service.PricingService;
 
@@ -42,6 +45,9 @@ public class PricingServiceImpl implements PricingService {
 
     @Autowired
     private MfNavHistoryRepo mfNavHistoryRepo;
+    
+    @Autowired
+    private BillPaymentRepo billPaymentRepo;
 
     @Override
     public Map<String, PriceDTO> getStocksPrice(LocalDate date, Set<String> isin) {
@@ -121,6 +127,16 @@ public class PricingServiceImpl implements PricingService {
 
         }
         return ratesMap;
+    }
+
+    @Override
+    public List<BillPayment> getBills() {
+        return billPaymentRepo.findAll();
+    }
+
+    @Override
+    public List<BillPayment> saveBills(List<BillPayment> bills) {
+        return billPaymentRepo.saveAll(bills);
     }
 
 }
