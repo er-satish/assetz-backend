@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.skumar.assetz.beans.AnalysisResult;
 import com.skumar.assetz.dto.PriceDTO;
 import com.skumar.assetz.entity.BillPayment;
 
@@ -59,5 +60,7 @@ public interface PricingService {
     List<BillPayment> getBills();
 
     List<BillPayment> saveBills(List<BillPayment> bills);
+
+    AnalysisResult getAnalysisResult();
 
 }

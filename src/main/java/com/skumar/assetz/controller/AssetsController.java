@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.skumar.assetz.beans.AnalysisResult;
 import com.skumar.assetz.beans.AssetsDetailsResponse;
 import com.skumar.assetz.beans.AssetsSummaryResponse;
 import com.skumar.assetz.entity.BillPayment;
@@ -78,6 +79,11 @@ public class AssetsController {
     @PutMapping("bills")
     public List<BillPayment> updateBills(@RequestBody @Valid List<BillPayment> bills) throws MalformedURLException, IOException {
         return pricingService.saveBills(bills);
+    }
+    
+    @GetMapping("analysis")
+    public AnalysisResult getAnalysisResult() throws MalformedURLException, IOException {
+        return pricingService.getAnalysisResult();
     }
 
 }

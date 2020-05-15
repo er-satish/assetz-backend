@@ -17,6 +17,7 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.CollectionUtils;
 
+import com.skumar.assetz.beans.ScripPriceVO;
 import com.skumar.assetz.dto.CurrentHoldingsDTO;
 import com.skumar.assetz.dto.PriceDTO;
 
@@ -42,6 +43,21 @@ public class AssetsGenericRepo {
     private final String queryToGetPreviousNavForStocks = "select isin,close,timestamp from ( select isin,close,timestamp,ROW_NUMBER() over (partition by isin order by timestamp asc) as rn from public.navhistory nh where nh.isin in ( :isin ) and timestamp>=:date ) tem where tem.rn=1";
 
     private final String queryToGetPreviousNavForMf = "select isin,close,timestamp from ( select isin,close,timestamp,ROW_NUMBER() over (partition by isin order by timestamp asc) as rn from public.mfnavhistory nh where nh.isin in ( :isin ) and timestamp>=:date ) tem where tem.rn=1";
+    
+    private final String queryToGetVolatileStocks = "select symbol,close,prevclose-close as change, ((prevclose-close)*100/prevclose) as perChange, \n" + 
+            "timestamp as lastTradeDay from navhistory where timestamp=(select max(timestamp) from navhistory \n" + 
+            "where timestamp>current_date-5) and series = 'EQ' and totaltrades>10000 order by perChange desc limit :size";
+    
+    private final String queryToGetVolatileStocksForPeriod = "select t.SYMBOL,t.close,(t.close-p.close) as change,\n" + 
+            " TRUNC((t.close-p.close)*100/p.close,3) as perChange,t.timestamp as lastTradeDay,p.timestamp as refTradeDay\n" + 
+            " from navhistory t inner join navhistory p \n" + 
+            " on t.SYMBOL=p.SYMBOL and t.SERIES=p.SERIES where\n" + 
+            " t.timestamp=(select max(timestamp) from navhistory \n" + 
+            "where timestamp>current_date-5) \n" + 
+            " and t.timestamp-p.timestamp=:dayCount \n" + 
+            " and t.series = 'EQ' \n" + 
+            " and t.totaltrades>10000\n" + 
+            " order by perChange desc LIMIT :size";
 
     public List<CurrentHoldingsDTO> getCurrentHoldings() {
 
@@ -192,5 +208,51 @@ public class AssetsGenericRepo {
 
         });
     }
+
+    public LocalDate getLastNavDate() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public List<ScripPriceVO> getVolatileStocks() {
+       SqlParameterSource namedParameters = new MapSqlParameterSource().addValue("size", 100);
+        
+        return namedParameterJdbcTemplate.query(queryToGetVolatileStocks, namedParameters,new RowMapper<ScripPriceVO>() {
+
+            @Override
+            public ScripPriceVO mapRow(ResultSet rs, int rowNum) throws SQLException {
+                ScripPriceVO dto = new ScripPriceVO();
+                dto.setSchemeName(rs.getString("symbol"));
+                dto.setLastNav(rs.getBigDecimal("close"));
+                dto.setNavChange(rs.getBigDecimal("change"));
+                dto.setNavChangePercent(rs.getBigDecimal("perChange"));
+                dto.setLastNavDt(rs.getObject("lastTradeDay", LocalDate.class));   
+                return dto;
+            }
+
+        });
+        
+    }
+    
+    public List<ScripPriceVO> getVolatileStocksForPeriod(int dayCount) {
+        SqlParameterSource namedParameters = new MapSqlParameterSource().addValue("dayCount", dayCount).addValue("size", 100);
+         
+         return namedParameterJdbcTemplate.query(queryToGetVolatileStocksForPeriod, namedParameters,new RowMapper<ScripPriceVO>() {
+
+             @Override
+             public ScripPriceVO mapRow(ResultSet rs, int rowNum) throws SQLException {
+                 ScripPriceVO dto = new ScripPriceVO();
+                 dto.setSchemeName(rs.getString("symbol"));
+                 dto.setLastNav(rs.getBigDecimal("close"));
+                 dto.setNavChange(rs.getBigDecimal("change"));
+                 dto.setNavChangePercent(rs.getBigDecimal("perChange"));
+                 dto.setLastNavDt(rs.getObject("lastTradeDay", LocalDate.class));
+                 dto.setRefNavDt(rs.getObject("refTradeDay", LocalDate.class));   
+                 return dto;
+             }
+
+         });
+         
+     }
 
 }

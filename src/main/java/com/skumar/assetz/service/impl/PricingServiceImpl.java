@@ -23,6 +23,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import com.skumar.assetz.beans.AnalysisCard;
+import com.skumar.assetz.beans.AnalysisResult;
+import com.skumar.assetz.beans.ScripPriceVO;
 import com.skumar.assetz.dto.PriceDTO;
 import com.skumar.assetz.entity.BillPayment;
 import com.skumar.assetz.entity.MfNavHistory;
@@ -137,6 +140,58 @@ public class PricingServiceImpl implements PricingService {
     @Override
     public List<BillPayment> saveBills(List<BillPayment> bills) {
         return billPaymentRepo.saveAll(bills);
+    }
+
+    @Override
+    public AnalysisResult getAnalysisResult() {
+        AnalysisResult analysisResult = new AnalysisResult();
+
+        //get stocks based on last trading day change percentage
+        AnalysisCard analysisCard = new AnalysisCard();
+        analysisCard.setName("Last Trading Day");
+        List<ScripPriceVO> scripPriceVOs = assetsGenericRepo.getVolatileStocks();
+        analysisCard.setScripPriceVOs(scripPriceVOs);
+        if(!CollectionUtils.isEmpty(scripPriceVOs)) {
+            analysisCard.setFromDate(scripPriceVOs.get(0).getLastNavDt());
+            analysisCard.setToDate(scripPriceVOs.get(0).getLastNavDt());
+        }
+        analysisResult.getAnalysisCards().add(analysisCard);
+        
+        //get stocks based on last 7 trading days change percentage
+        AnalysisCard analysisCard1 = new AnalysisCard();
+        analysisCard1.setName("Last 7 Trading Days");
+        List<ScripPriceVO> scripPriceVOs1 = assetsGenericRepo.getVolatileStocksForPeriod(7);
+        analysisCard1.setScripPriceVOs(scripPriceVOs1);
+        if(!CollectionUtils.isEmpty(scripPriceVOs1)) {
+            analysisCard1.setFromDate(scripPriceVOs1.get(0).getRefNavDt());
+            analysisCard1.setToDate(scripPriceVOs1.get(0).getLastNavDt());
+        }
+        analysisResult.getAnalysisCards().add(analysisCard1);
+        
+        //get stocks based on last 14 trading days change percentage
+        AnalysisCard analysisCard2 = new AnalysisCard();
+        analysisCard2.setName("Last 14 Trading Days");
+        List<ScripPriceVO> scripPriceVOs2 = assetsGenericRepo.getVolatileStocksForPeriod(14);
+        analysisCard2.setScripPriceVOs(scripPriceVOs2);
+        if(!CollectionUtils.isEmpty(scripPriceVOs2)) {
+            analysisCard2.setFromDate(scripPriceVOs2.get(0).getRefNavDt());
+            analysisCard2.setToDate(scripPriceVOs2.get(0).getLastNavDt());
+        }
+        analysisResult.getAnalysisCards().add(analysisCard2);
+        
+      //get stocks based on last 28 trading days change percentage
+        AnalysisCard analysisCard3 = new AnalysisCard();
+        analysisCard3.setName("Last 28 Trading Days");
+        List<ScripPriceVO> scripPriceVOs3 = assetsGenericRepo.getVolatileStocksForPeriod(28);
+        analysisCard3.setScripPriceVOs(scripPriceVOs3);
+        if(!CollectionUtils.isEmpty(scripPriceVOs3)) {
+            analysisCard3.setFromDate(scripPriceVOs3.get(0).getRefNavDt());
+            analysisCard3.setToDate(scripPriceVOs3.get(0).getLastNavDt());
+        }
+        analysisResult.getAnalysisCards().add(analysisCard3);
+        
+        
+        return analysisResult;
     }
 
 }
