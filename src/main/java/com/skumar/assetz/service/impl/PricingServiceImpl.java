@@ -40,7 +40,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class PricingServiceImpl implements PricingService {
     final static String url = "https://www.amfiindia.com/spages/NAVOpen.txt";
-    final static String mountPoint = "/home/pi/lab/myapp/assetz/backend/data/";
+    final static String mountPoint = "./";
     final static String datePattern = "d-MMM-uuuu";
 
     @Autowired
