@@ -44,7 +44,7 @@ public class AssetsGenericRepo {
 
     private final String queryToGetPreviousNavForMf = "select isin,close,timestamp from ( select isin,close,timestamp,ROW_NUMBER() over (partition by isin order by timestamp asc) as rn from public.mfnavhistory nh where nh.isin in ( :isin ) and timestamp>=:date ) tem where tem.rn=1";
     
-    private final String queryToGetVolatileStocks = "select symbol,close,prevclose-close as change, ((prevclose-close)*100/prevclose) as perChange, \n" + 
+    private final String queryToGetVolatileStocks = "select symbol,close,close-prevclose as change, ((close-prevclose)*100/prevclose) as perChange, \n" + 
             "timestamp as lastTradeDay from navhistory where timestamp=(select max(timestamp) from navhistory \n" + 
             "where timestamp>current_date-5) and series = 'EQ' and totaltrades>10000 order by perChange desc limit :size";
     
